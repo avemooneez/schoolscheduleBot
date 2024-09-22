@@ -14,6 +14,7 @@ class Database:
             database="schoolproject"
             )
         self.cur = self.conn.cursor()
+        self.conn.autocommit = True
 
     def start(self):
         """
