@@ -8,7 +8,7 @@ from db import Database
 async def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
-    db = Database("./database.db")
+    db = Database()
     db.start()
     
     bot = Bot(token=tokens.bot_token)
