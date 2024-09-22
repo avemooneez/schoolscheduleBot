@@ -5,7 +5,7 @@ from db import Database
 
 
 router = Router()
-db = Database("./database.db")
+db = Database()
 
 @router.message(Command("start"))
 async def cmd_start(message: Message):
