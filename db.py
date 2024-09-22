@@ -26,17 +26,18 @@ class Database:
             self.get_db()
 
     def create_tables(self):
-        self.cur.execute(
-            """
+        with self.conn:
+            self.cur.execute(
+                """
 CREATE TABLE IF NOT EXISTS users(
     user_id SERIAL PRIMARY KEY UNIQUE NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     grade INTEGER,
     letter TEXT
-)
+);
 """
-        )
+            )
 
     def get_db(self):
         """
