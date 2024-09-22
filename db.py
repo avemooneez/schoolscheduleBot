@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("SELECT * FROM users")
+            self.cur.execute("SELECT * FROM users;")
             users = self.cur.fetchall()
             print(users)
 
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS users(
 
         with self.conn:
             pass
-
+        
     def get_users(self):
         """
         Получает список всех пользователей из базы данных.
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS users(
         """
         
         with self.conn:
-            self.cur.execute("SELECT user_id FROM users")
+            self.cur.execute("SELECT user_id FROM users;")
             return self.cur.fetchall()
 
     def user_exists(self, user_id: int):
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS users(
     
         with self.conn:
             self.cur.execute(
-                "SELECT * FROM users WHERE user_id = %s",
+                "SELECT * FROM users WHERE user_id = %s;",
                 (user_id,)
             )
             return self.cur.fetchone() is not None
@@ -110,4 +110,5 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("INSERT INTO users (user_id) VALUES (%s)", (user_id,))
+            self.cur.execute("INSERT INTO users (user_id) VALUES (%s);", (user_id,))
+        self.get_db()
