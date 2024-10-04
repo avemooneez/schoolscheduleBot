@@ -27,7 +27,6 @@ async def cmd_start(message: Message, state: FSMContext):
 async def grade_handler(message: Message, state: FSMContext):
     grade = message.text
     await state.update_data(grade=grade)
-    print(await state.get_data())
     await message.answer("Вы выбрали класс {}. Выберите букву класса ниже.".format(grade), reply_markup=grade_letter.letter_kb(grade=message.text))
     await state.set_state(Grades.letter)
 
@@ -37,14 +36,12 @@ async def letter_handler(message: Message, state: FSMContext):
     await state.update_data(letter=letter)
     gradeLetter = await state.get_data()
     await message.answer(f"Вы в {gradeLetter['grade']}{gradeLetter['letter']} классе. Всё верно?", reply_markup=grade_letter.isAllCorrect_kb())
-    # await message.answer(f"Вы в классе.\nВсё верно?", reply_markup=grade_letter.isAllCorrect_kb())
     await state.set_state(Grades.isAllCorrect)
 
 @router.message(Grades.isAllCorrect)
 async def isAllCorrect_handler(message: Message, state: FSMContext):
     if message.text == "Всё верно":
         gradeLetter = await state.get_data()
-        print(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
         db.add_user(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
         await message.answer("Отлично!", reply_markup=ReplyKeyboardRemove())
         
