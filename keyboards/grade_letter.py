@@ -33,3 +33,9 @@ def letter_kb(grade) -> ReplyKeyboardMarkup:
             for letter in ['А', 'Б']:
                 kb.add(KeyboardButton(text=letter))
     return kb.as_markup(resize_keyboard=True)
+
+def isAllCorrect_kb() -> ReplyKeyboardMarkup:
+    kb = ReplyKeyboardBuilder()
+    kb.add(KeyboardButton(text="Всё верно"))
+    kb.add(KeyboardButton(text="Нет, изменить"))
+    return kb.as_markup(resize_keyboard=True)

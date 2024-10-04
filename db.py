@@ -22,6 +22,7 @@ class Database:
         """
         
         self.create_tables()
+        # self.custom()
         self.get_db()
 
     def create_tables(self):
@@ -29,7 +30,7 @@ class Database:
             self.cur.execute(
                 """
 CREATE TABLE IF NOT EXISTS users(
-    user_id SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    user_id BIGINT PRIMARY KEY UNIQUE NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     grade INTEGER,
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS users(
 );
 """
             )
+
 
     def get_db(self):
         """
@@ -65,7 +67,7 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            pass
+            self.cur.execute("ALTER TABLE users ALTER COLUMN user_id TYPE BIGINT")
         
     def get_users(self):
         """
@@ -100,7 +102,7 @@ CREATE TABLE IF NOT EXISTS users(
             )
             return self.cur.fetchone() is not None
 
-    def add_user(self, user_id: int):
+    def add_user(self, user_id: int, grade: int, letter: str):
         """
         Добавляет нового пользователя в базу данных по заданному идентификатору.
 
@@ -109,5 +111,5 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("INSERT INTO users (user_id) VALUES (%s);", (user_id,))
+            self.cur.execute("INSERT INTO users (user_id, grade, letter) VALUES (%s, %s, %s);", (user_id, grade, letter))
         self.get_db()
