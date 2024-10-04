@@ -26,9 +26,8 @@ class Database:
             self.get_db()
 
     def create_tables(self):
-        with self.conn:
-            self.cur.execute(
-                """
+        self.cur.execute(
+            """
 CREATE TABLE IF NOT EXISTS users(
     user_id SERIAL PRIMARY KEY UNIQUE NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
@@ -37,7 +36,7 @@ CREATE TABLE IF NOT EXISTS users(
     letter TEXT
 );
 """
-            )
+        )
 
     def get_db(self):
         """
