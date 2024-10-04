@@ -1,6 +1,5 @@
 from aiogram.types import Message
-from aiogram.filters import Command
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.redis import RedisStorage
@@ -16,13 +15,10 @@ class Grades(StatesGroup):
     letter = State()
     isAllCorrect = State()
 
-@router.message(Command("start"))
+@router.message(F.text == "Настройки")
 async def cmd_start(message: Message, state: FSMContext):
-    if not db.user_exists(message.from_user.id):
-        await message.answer("Вы новый пользователь! Выберите ваш класс в клавиатуре ниже.", reply_markup=grade_letter.grade_kb())
-        await state.set_state(Grades.grade)
-        return
-    await message.answer("Добро пожаловать в бота!", reply_markup=main.main_kb())
+    await message.answer("Выберите Ваш класс в клавиатуре ниже.", reply_markup=grade_letter.grade_kb())
+    await state.set_state(Grades.grade)
 
 @router.message(Grades.grade)
 async def grade_handler(message: Message, state: FSMContext):
@@ -43,7 +39,7 @@ async def letter_handler(message: Message, state: FSMContext):
 async def isAllCorrect_handler(message: Message, state: FSMContext):
     if message.text == "Всё верно":
         gradeLetter = await state.get_data()
-        db.add_user(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
+        db.update_user(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
         await message.answer("Отлично!", reply_markup=main.main_kb())
         
     else:

@@ -108,8 +108,21 @@ CREATE TABLE IF NOT EXISTS users(
 
         Параметры:
         - user_id (int): Идентификатор пользователя, который необходимо добавить в базу данных.
+        - grade (int): Значение для поля grade.
+        - letter (str): Значение для поля letter.
         """
-
+        
         with self.conn:
-            self.cur.execute("INSERT INTO users (user_id, grade, letter) VALUES (%s, %s, %s);", (user_id, grade, letter))
-        self.get_db()
+            self.cur.execute("INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);", (grade, letter, user_id,))
+
+    def update_user(self, user_id: int, grade: int, letter: str):
+        """
+        Обновляет данные о пользователе в базе данных по заданному идентификатору.
+        
+        Параметры:
+        - user_id (int): Идентификатор пользователя, для которого необходимо изменить данные.
+        - grade (int): Новое значение для поля grade.
+        - letter (str): Новое значение для поля letter.
+        """
+        with self.conn:  
+            self.cur.execute("UPDATE users SET (grade, letter) = (%s, %s) WHERE user_id = %s;", (grade, letter, user_id,))
