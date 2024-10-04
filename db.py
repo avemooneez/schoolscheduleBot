@@ -21,13 +21,13 @@ class Database:
         Создаёт таблицу users, если таковой не существует. Выводит всех пользователей в таблице.
         """
         
-        with self.conn:
-            self.create_tables()
-            self.get_db()
+        self.create_tables()
+        self.get_db()
 
     def create_tables(self):
-        self.cur.execute(
-            """
+        with self.conn:
+            self.cur.execute(
+                """
 CREATE TABLE IF NOT EXISTS users(
     user_id SERIAL PRIMARY KEY UNIQUE NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS users(
     letter TEXT
 );
 """
-        )
+            )
 
     def get_db(self):
         """
