@@ -45,6 +45,8 @@ async def isAllCorrect_handler(message: Message, state: FSMContext):
         gradeLetter = await state.get_data()
         db.add_user(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
         await message.answer("Отлично!", reply_markup=main.main_kb())
+        await state.clear()
+        await state.set_state(None)
         
     else:
         await message.answer("Начинаем заново. Выберите ваш класс в клавиатуре ниже.", reply_markup=grade_letter.grade_kb())

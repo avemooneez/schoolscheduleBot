@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("ALTER TABLE users ALTER COLUMN user_id TYPE BIGINT")
+            self.cur.execute("DELETE FROM users")
         
     def get_users(self):
         """
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS users(
         """
         
         with self.conn:
-            self.cur.execute("INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);", (grade, letter, user_id,))
+            self.cur.execute("INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);", (grade, letter, user_id))
 
     def update_user(self, user_id: int, grade: int, letter: str):
         """
@@ -125,4 +125,4 @@ CREATE TABLE IF NOT EXISTS users(
         - letter (str): Новое значение для поля letter.
         """
         with self.conn:  
-            self.cur.execute("UPDATE users SET (grade, letter) = (%s, %s) WHERE user_id = %s;", (grade, letter, user_id,))
+            self.cur.execute("UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;", (grade, letter, user_id))
