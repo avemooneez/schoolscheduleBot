@@ -126,3 +126,35 @@ CREATE TABLE IF NOT EXISTS users(
         """
         with self.conn:  
             self.cur.execute("UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;", (grade, letter, user_id))
+
+    def get_user(self, user_id: int):
+        """
+        Получает данные о пользователе из базы данных по заданному идентификатору.
+
+        Параметры:
+        - user_id (int): Идентификатор пользователя, для которого необходимо получить данные.
+
+        Возвращает:
+        - tuple: Кортеж, содержащий данные о пользователе из таблицы users.
+        
+        Примечание:
+        - Если пользователь с указанным user_id не найден, возвращается None.
+        """
+    
+        with self.conn:
+            self.cur.execute(
+                "SELECT * FROM users WHERE user_id = %s;",
+                (user_id,)
+            )
+            return self.cur.fetchone()
+
+    def get_grade(self, user_id: int):
+        """
+        """
+        
+        with self.conn:
+            self.cur.execute(
+                "SELECT grade, letter FROM users WHERE user_id = %s;",
+                (user_id,)
+            )
+            return self.cur.fetchone()
