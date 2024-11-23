@@ -1,10 +1,10 @@
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import Command
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.redis import RedisStorage
-from keyboards import grade_letter, main
+from keyboards import grade_letter
 from db import Database
 
 storage = RedisStorage.from_url("redis://localhost:6379/0")
@@ -22,7 +22,7 @@ async def cmd_start(message: Message, state: FSMContext):
         await message.answer("Вы новый пользователь! Выберите ваш класс в клавиатуре ниже.", reply_markup=grade_letter.grade_kb())
         await state.set_state(Grades.grade)
         return
-    await message.answer("Добро пожаловать в бота! Это — бот с расписанием уроков в школе №9. Воспользуйтесь кнопками ниже для управления ботом.", reply_markup=main.main_kb())
+    await message.answer("Добро пожаловать в бота! Это — бот с расписанием уроков в школе №9. Воспользуйтесь кнопками ниже для управления ботом.", reply_markup=ReplyKeyboardRemove())
 
 @router.message(Grades.grade)
 async def grade_handler(message: Message, state: FSMContext):
@@ -44,7 +44,7 @@ async def isAllCorrect_handler(message: Message, state: FSMContext):
     if message.text == "Всё верно":
         gradeLetter = await state.get_data()
         db.add_user(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
-        await message.answer("Отлично!", reply_markup=main.main_kb())
+        await message.answer("Отлично!", reply_markup=ReplyKeyboardRemove())
         await state.clear()
         await state.set_state(None)
         
