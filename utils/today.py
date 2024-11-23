@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
-from datetime import datetime
 
 class ScheduleImage:
     def __init__(self, schedule):
@@ -51,9 +50,9 @@ class ScheduleImage:
             y_text += block_height
 
             if index < len(self.schedule[grade]) - 1: 
-                draw.line((50, y_text - line_offset, 550, y_text - line_offset), fill=(80, 80, 80), width=1)
+                draw.line((40, y_text - line_offset, 560, y_text - line_offset), fill=(80, 80, 80), width=1)
 
-        image_path = f"./temp/{datetime.now().strftime('%d-%m-%Y')}-{grade}.png"
+        image_path = f"./temp/{date}-{grade}.png"
         img.save(image_path)
 
         return image_path
