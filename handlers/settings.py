@@ -6,10 +6,12 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.redis import RedisStorage
 from keyboards import grade_letter
 from db import Database
+from utils.downloading_file import SendScheduleImage
 
 storage = RedisStorage.from_url("redis://localhost:6379/0")
 router = Router()
 db = Database()
+schedule = SendScheduleImage()
 
 class SettingsGrades(StatesGroup):
     grade = State()
@@ -42,6 +44,7 @@ async def isAllCorrect_handler(message: Message, state: FSMContext):
         gradeLetter = await state.get_data()
         db.update_user(message.from_user.id, int(gradeLetter['grade']), str(gradeLetter['letter']))
         await message.answer("Отлично!", reply_markup=ReplyKeyboardRemove())
+        await schedule.send_schedule_images_for_one(message, db, message.from_user.id)
         await state.clear()
         await state.set_state(None)
         

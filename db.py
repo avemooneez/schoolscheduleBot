@@ -158,3 +158,20 @@ CREATE TABLE IF NOT EXISTS users(
                 (user_id,)
             )
             return self.cur.fetchone()
+    
+    def get_active_users(self):
+        """"""
+        with self.conn:
+            self.cur.execute("SELECT user_id, grade, letter FROM users WHERE is_active = TRUE;")
+            return self.cur.fetchall()
+    
+    def get_user_for_schedule(self, user_id):
+        """
+        """
+        
+        with self.conn:
+            self.cur.execute(
+                "SELECT user_id, grade, letter FROM users WHERE user_id = %s AND is_active = TRUE;",
+                (user_id,)
+            )
+            return self.cur.fetchone()
