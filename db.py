@@ -35,8 +35,17 @@ CREATE TABLE IF NOT EXISTS users(
     user_id BIGINT PRIMARY KEY UNIQUE NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
-    grade INTEGER,
-    letter TEXT
+    grade INTEGER DEFAULT 0,
+    letter TEXT DEFAULT ''
+);
+"""
+            )
+            self.cur.execute(
+                """
+CREATE TABLE IF NOT EXISTS groups(
+    group_id BIGINT PRIMARY KEY UNIQUE NOT NULL,
+    grade INTEGER DEFAULT 0,
+    letter TEXT DEFAULT ''
 );
 """
             )
@@ -61,7 +70,10 @@ CREATE TABLE IF NOT EXISTS users(
         with self.conn:
             self.cur.execute("SELECT * FROM users;")
             users = self.cur.fetchall()
-            print(users)
+            self.cur.execute("SELECT * FROM groups;")
+            groups = self.cur.fetchall()
+            
+            print(users, '\n', groups)
 
     def custom(self):
         """
@@ -69,8 +81,11 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("DELETE FROM users WHERE user_id = 1087968824")
-            logging.info("Пользователь удален.")
+            self.cur.execute("ALTER TABLE users ALTER COLUMN grade SET DEFAULT 0;")
+            self.cur.execute("ALTER TABLE users ALTER COLUMN letter SET DEFAULT '';")
+            self.cur.execute("UPDATE users SET grade = 0 WHERE grade IS NULL;")
+            self.cur.execute("UPDATE users SET letter = '' WHERE letter IS NULL;")
+            logging.info("Дефолтные значения добавлены.")
         
     def get_users(self):
         """
