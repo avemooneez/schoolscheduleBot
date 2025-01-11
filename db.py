@@ -1,6 +1,8 @@
 import psycopg2
-from psycopg2 import sql
 from utils.tokens import db_user, db_host, db_passwd
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 class Database:
     def __init__(self):
@@ -67,7 +69,8 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("DELETE FROM users")
+            self.cur.execute("DELETE FROM users WHERE user_id = 1087968824")
+            logging.info("Пользователь удален.")
         
     def get_users(self):
         """
