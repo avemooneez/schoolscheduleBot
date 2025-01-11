@@ -6,7 +6,9 @@ import os
 import aspose.words as aw
 from datetime import datetime
 from aiogram.types import FSInputFile
-from db import Database
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 class SendScheduleImage:
     def __init__(self):
@@ -21,7 +23,11 @@ class SendScheduleImage:
         self.file_path = f'{self.folder_path}/{self.file_name}.docx'
         os.makedirs(self.folder_path, exist_ok=True)
     
-    def download_file(self, output_file):
+    def download_file(self, output_file: str):
+        """
+        Скачивание .docx файла с расписанием.
+        """
+        
         base_url = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?'
         public_key = 'https://yadi.sk/d/KFhrI27am7MG9g'
 
@@ -35,9 +41,18 @@ class SendScheduleImage:
         return self.folder_path + '/' + output_file + '.docx'
 
     def get_images_from_docx(self):
+        """
+        Достаёт фото из файла с расписанием.
+        """
+        
         docx2txt.process(self.file_path, self.folder_path)
     
-    def compare_docx(self, file1, file2):
+    def compare_docx(self, file1, file2) -> bool:
+        """
+        Сравнивает два файла на наличие различий.
+        Возвращает bool.
+        """
+        
         doc1 = aw.Document(file1)
         doc2 = aw.Document(file2)
         
@@ -47,12 +62,12 @@ class SendScheduleImage:
     async def check_new_schedule(self, bot, db):
         self.get_images_from_docx()
         while True:
-            print("Checking new schedule")
+            logging.info("Проверка нового расписания")
+            
             if os.path.exists(self.file_path):
-                print("There is schedule file")
                 file2 = self.download_file(self.file_name + '1')
                 if os.path.exists(file2) and self.compare_docx(self.file_path, file2):
-                    print('Files are not identical')
+                    logging.info('Файлы не идентичны')
                     os.remove(self.file_path)
                     os.rename(file2, self.file_path)
                 
@@ -64,20 +79,23 @@ class SendScheduleImage:
                     self.get_images_from_docx()
                     
                     await self.send_schedule_images_for_all(bot, db)
-                    print("Расписание отправлено успешно!")
+                    logging.info("Расписание отправлено успешно!")
                     continue
                 else:
-                    print('Files are identical')
+                    logging.info('Файлы идентичны')
                     os.remove(file2)
             else:
-                print("There isn't schedule file")
-            await asyncio.sleep(600)
+                logging.warning("Нет файла с расписанием!")
+            
+            await asyncio.sleep(599) # Ждёт 10 минут
         
     def get_image_name(self, grade):
         return f"{self.folder_path}/{self.page_mapping.get(grade)}"
 
     async def send_schedule_images_for_all(self, bot, db):
         users = db.get_active_users()
+        # groups = db.get_groups()
+        groups = [(-1002129798501, 9, 'А'),]
         for _, user in enumerate(users):
             try:
                 await bot.send_photo(
@@ -86,16 +104,25 @@ class SendScheduleImage:
                     caption="Доступно новое расписание!"
                 )
             except Exception as e:
-                pass
+                logging.warning(e)
+        logging.info("Расписание для пользователей успешно отправлено")
+        for _, group in enumerate(groups):
+            try:
+                await bot.send_photo(
+                    chat_id=group[0],
+                    photo=FSInputFile(self.get_image_name(str(group[1]) + str(group[2]).lower())),
+                    caption="Доступно новое расписание!"
+                )
+            except Exception as e:
+                logging.warning(e)
+        logging.info("Расписание для групп успешно отправлено")
     
     async def send_schedule_images_for_one(self, message, db, user_id):
         user = db.get_user_for_schedule(user_id)
-        print(str(user[1]) + str(user[2]).lower())
-        print(self.get_image_name(str(user[1]) + str(user[2]).lower()))
         if user:
             try:
                 await message.answer_photo(photo=FSInputFile(self.get_image_name(str(user[1]) + str(user[2]).lower())))
             except Exception as e:
-                print(e)
+                logging.warning(e)
         else:
             print("User not found")
