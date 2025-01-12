@@ -2,7 +2,7 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, F
 from utils import tokens
-from handlers.private import start, settings, send_schedule
+from handlers import start, settings, send_schedule
 from db import Database
 from utils.downloading_file import SendScheduleImage
 from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats
@@ -24,19 +24,13 @@ async def main():
     dp = Dispatcher()
 
     private_commands = [
-        BotCommand(command="start", description="Start the bot"),
-        BotCommand(command="help", description="Get help information"),
-        BotCommand(command="settings", description="Bot settings"),
+        BotCommand(command="start", description="Перезапуск бота"),
+        BotCommand(command="settings", description="Настройки бота"),
+        BotCommand(command="schedule", description="Отправить расписание"),
+        BotCommand(command="info", description="Информация о боте"),
+        BotCommand(command="help", description="Помощь"),
     ]
     await bot.set_my_commands(private_commands, scope=BotCommandScopeAllPrivateChats())
-
-    # Команды для групп
-    group_commands = [
-        BotCommand(command="rules", description="Group rules"),
-        BotCommand(command="info", description="Information about the group"),
-        BotCommand(command="admin", description="Contact group admin"),
-    ]
-    await bot.set_my_commands(group_commands, scope=BotCommandScopeAllGroupChats())
 
     dp.include_routers(
         start.router,

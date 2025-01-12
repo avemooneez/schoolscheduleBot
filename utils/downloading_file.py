@@ -94,8 +94,8 @@ class SendScheduleImage:
 
     async def send_schedule_images_for_all(self, bot, db):
         users = db.get_active_users()
-        # groups = db.get_groups()
-        groups = [(-1002129798501, 9, 'А'),]
+        groups = db.get_groups()
+        # groups = [(-1002129798501, 9, 'А'),]
         for _, user in enumerate(users):
             try:
                 await bot.send_photo(
