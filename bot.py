@@ -23,14 +23,13 @@ async def main():
     bot = Bot(token=tokens.bot_token)
     dp = Dispatcher()
 
-    private_commands = [
+    await bot.set_my_commands([
         BotCommand(command="start", description="Перезапуск бота"),
         BotCommand(command="settings", description="Настройки бота"),
         BotCommand(command="schedule", description="Отправить расписание"),
         BotCommand(command="info", description="Информация о боте"),
         BotCommand(command="help", description="Помощь"),
-    ]
-    await bot.set_my_commands(private_commands, scope=BotCommandScopeAllPrivateChats())
+        ])
 
     dp.include_routers(
         start.router,
