@@ -20,6 +20,7 @@ class Grades(StatesGroup):
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
+    await message.answer(str(await state.get_state()))
     if not db.user_exists(message.from_user.id):
         await message.answer("Вы новый пользователь! Выберите ваш класс в клавиатуре ниже.", reply_markup=grade_letter.grade_kb())
         await state.set_state(Grades.grade)
