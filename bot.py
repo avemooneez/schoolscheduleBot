@@ -1,16 +1,12 @@
 import asyncio
 import logging
+import os
 from aiogram import Bot, Dispatcher, F
+from aiogram.types import BotCommand
 from utils import tokens
 from handlers import start, settings, send_schedule, admin
 from db import Database
 from utils.downloading_file import SendScheduleImage
-from aiogram.types import (
-    BotCommand,
-    BotCommandScopeAllPrivateChats,
-    BotCommandScopeAllGroupChats,
-)
-import os
 
 db = Database()
 schedule = SendScheduleImage()

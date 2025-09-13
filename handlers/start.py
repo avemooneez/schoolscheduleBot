@@ -22,6 +22,7 @@ class Grades(StatesGroup):
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
+    assert message.from_user
     await message.answer(str(await state.get_state()))
     if not db.user_exists(message.from_user.id):
         await message.answer(
@@ -38,6 +39,7 @@ async def cmd_start(message: Message, state: FSMContext):
 
 @router.message(Grades.grade)
 async def grade_handler(message: Message, state: FSMContext):
+    assert message.from_user
     grade = message.text
     await state.update_data(grade=grade)
     await message.answer(
@@ -49,6 +51,7 @@ async def grade_handler(message: Message, state: FSMContext):
 
 @router.message(Grades.letter)
 async def letter_handler(message: Message, state: FSMContext):
+    assert message.from_user
     letter = message.text
     await state.update_data(letter=letter)
     gradeLetter = await state.get_data()
@@ -61,6 +64,7 @@ async def letter_handler(message: Message, state: FSMContext):
 
 @router.message(Grades.isAllCorrect)
 async def isAllCorrect_handler(message: Message, state: FSMContext):
+    assert message.from_user
     if message.text == "Всё верно":
         gradeLetter = await state.get_data()
         db.add_user(

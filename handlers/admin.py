@@ -34,6 +34,8 @@ db = Database()
 
 @router.message(Command("send_msg"))
 async def cmd_send_msg(message: Message):
+    assert message.from_user
+
     admins = db.get_admins()
     logging.info(admins)
     logging.info(message.from_user.id)
@@ -44,7 +46,8 @@ async def cmd_send_msg(message: Message):
     users = db.get_active_users()
     for _, user in enumerate(users):
         try:
-            await message.bot.send_message(chat_id=user[0], text=message.text[10:])
-        except Exception as e:
-            logging.warning(e)
+            if message.bot and message.text:
+                await message.bot.send_message(chat_id=user[0], text=message.text[10:])
+        except (ConnectionError, TimeoutError) as e:
+            logging.warning("Failed to send message to user %s: %s", user[0], e)
     logging.info("Сообщение для пользователей успешно отправлено")

@@ -1,6 +1,6 @@
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import Command
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.redis import RedisStorage
@@ -22,6 +22,7 @@ class SettingsGrades(StatesGroup):
 
 @router.message(Command("settings"))
 async def cmd_start(message: Message, state: FSMContext):
+    assert message.from_user
     await message.answer(
         "Выберите Ваш класс в клавиатуре ниже.", reply_markup=grade_letter.grade_kb()
     )
@@ -30,10 +31,11 @@ async def cmd_start(message: Message, state: FSMContext):
 
 @router.message(SettingsGrades.grade)
 async def grade_handler(message: Message, state: FSMContext):
+    assert message.from_user
     grade = message.text
     await state.update_data(grade=grade)
     await message.answer(
-        "Вы выбрали класс {}. Выберите букву класса ниже.".format(grade),
+        text=f"Вы выбрали класс {grade}. Выберите букву класса ниже.",
         reply_markup=grade_letter.letter_kb(grade=message.text),
     )
     await state.set_state(SettingsGrades.letter)
@@ -41,11 +43,12 @@ async def grade_handler(message: Message, state: FSMContext):
 
 @router.message(SettingsGrades.letter)
 async def letter_handler(message: Message, state: FSMContext):
+    assert message.from_user
     letter = message.text
     await state.update_data(letter=letter)
-    gradeLetter = await state.get_data()
+    gradeletter = await state.get_data()
     await message.answer(
-        f"Вы в {gradeLetter['grade']}{gradeLetter['letter']} классе. Всё верно?",
+        f"Вы в {gradeletter['grade']}{gradeletter['letter']} классе. Всё верно?",
         reply_markup=grade_letter.isAllCorrect_kb(),
     )
     await state.set_state(SettingsGrades.isAllCorrect)
@@ -53,10 +56,12 @@ async def letter_handler(message: Message, state: FSMContext):
 
 @router.message(SettingsGrades.isAllCorrect)
 async def isAllCorrect_handler(message: Message, state: FSMContext):
+    assert message.from_user
     if message.text == "Всё верно":
-        gradeLetter = await state.get_data()
+        gradeletter = await state.get_data()
+
         db.update_user(
-            message.from_user.id, int(gradeLetter["grade"]), str(gradeLetter["letter"])
+            message.from_user.id, int(gradeletter["grade"]), str(gradeletter["letter"])
         )
         await message.answer("Отлично!", reply_markup=ReplyKeyboardRemove())
         await schedule.send_schedule_images_for_one(message, db, message.from_user.id)

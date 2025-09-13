@@ -1,13 +1,12 @@
-import requests
 from urllib.parse import urlencode
-import docx2txt
 import asyncio
-import os
-from aiogram.types import FSInputFile
-from db import Database
-from datetime import datetime
-import aspose.words as aw
 import logging
+import os
+from datetime import datetime
+from aiogram.types import FSInputFile
+import docx2txt
+import aspose.words as aw  # type: ignore
+import requests
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
