@@ -1,0 +1,14 @@
+[Unit]
+Description=Project 9 grade
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/project_9_grade/
+ExecStart=/root/project_9_grade/venv/bin/python3.10 /root/project_9_grade/bot.py
+RestartSec=100
+Restart=always
+
+[Install]
+WantedBy=multi-user.target 

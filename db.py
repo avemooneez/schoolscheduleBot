@@ -1,18 +1,21 @@
-import psycopg2
-from psycopg2 import sql
+import psycopg
+from psycopg import sql
 from utils.tokens import db_user, db_host, db_passwd
+
 
 class Database:
     def __init__(self):
         """
         Инициализирует класс, подключается к БД.
         """
-        
-        self.conn = psycopg2.connect(
-            user=f"{db_user}", password=f"{db_passwd}",
-            host=f"{db_host}", port="5432",
-            database="schoolproject"
-            )
+
+        self.conn = psycopg.connect(
+            user=f"{db_user}",
+            password=f"{db_passwd}",
+            host=f"{db_host}",
+            port="5432",
+            database="schoolproject",
+        )
         self.cur = self.conn.cursor()
         self.conn.autocommit = True
 
@@ -20,7 +23,7 @@ class Database:
         """
         Создаёт таблицу users, если таковой не существует. Выводит всех пользователей в таблице.
         """
-        
+
         self.create_tables()
         # self.custom()
         self.get_db()
@@ -38,7 +41,6 @@ CREATE TABLE IF NOT EXISTS users(
 );
 """
             )
-
 
     def get_db(self):
         """
@@ -68,7 +70,7 @@ CREATE TABLE IF NOT EXISTS users(
 
         with self.conn:
             self.cur.execute("DELETE FROM users")
-        
+
     def get_users(self):
         """
         Получает список всех пользователей из базы данных.
@@ -79,7 +81,7 @@ CREATE TABLE IF NOT EXISTS users(
         Примечание:
         Если в базе данных нет пользователей, возвращается пустой список.
         """
-        
+
         with self.conn:
             self.cur.execute("SELECT user_id FROM users;")
             return self.cur.fetchall()
@@ -94,12 +96,9 @@ CREATE TABLE IF NOT EXISTS users(
         Возвращает:
         bool: True, если пользователь с указанным user_id существует в базе данных, иначе False.
         """
-    
+
         with self.conn:
-            self.cur.execute(
-                "SELECT * FROM users WHERE user_id = %s;",
-                (user_id,)
-            )
+            self.cur.execute("SELECT * FROM users WHERE user_id = %s;", (user_id,))
             return self.cur.fetchone() is not None
 
     def add_user(self, user_id: int, grade: int, letter: str):
@@ -111,21 +110,33 @@ CREATE TABLE IF NOT EXISTS users(
         - grade (int): Значение для поля grade.
         - letter (str): Значение для поля letter.
         """
-        
+
         with self.conn:
-            self.cur.execute("INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);", (grade, letter, user_id))
+            self.cur.execute(
+                "INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);",
+                (grade, letter, user_id),
+            )
+
+    def get_admins(self):
+        """"""
+        with self.conn:
+            self.cur.execute("SELECT user_id FROM users WHERE is_admin = TRUE;")
+            return self.cur.fetchall()
 
     def update_user(self, user_id: int, grade: int, letter: str):
         """
         Обновляет данные о пользователе в базе данных по заданному идентификатору.
-        
+
         Параметры:
         - user_id (int): Идентификатор пользователя, для которого необходимо изменить данные.
         - grade (int): Новое значение для поля grade.
         - letter (str): Новое значение для поля letter.
         """
-        with self.conn:  
-            self.cur.execute("UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;", (grade, letter, user_id))
+        with self.conn:
+            self.cur.execute(
+                "UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;",
+                (grade, letter, user_id),
+            )
 
     def get_user(self, user_id: int):
         """
@@ -136,42 +147,38 @@ CREATE TABLE IF NOT EXISTS users(
 
         Возвращает:
         - tuple: Кортеж, содержащий данные о пользователе из таблицы users.
-        
+
         Примечание:
         - Если пользователь с указанным user_id не найден, возвращается None.
         """
-    
+
         with self.conn:
-            self.cur.execute(
-                "SELECT * FROM users WHERE user_id = %s;",
-                (user_id,)
-            )
+            self.cur.execute("SELECT * FROM users WHERE user_id = %s;", (user_id,))
             return self.cur.fetchone()
 
     def get_grade(self, user_id: int):
-        """
-        """
-        
+        """ """
+
         with self.conn:
             self.cur.execute(
-                "SELECT grade, letter FROM users WHERE user_id = %s;",
-                (user_id,)
+                "SELECT grade, letter FROM users WHERE user_id = %s;", (user_id,)
             )
             return self.cur.fetchone()
-    
+
     def get_active_users(self):
         """"""
         with self.conn:
-            self.cur.execute("SELECT user_id, grade, letter FROM users WHERE is_active = TRUE;")
+            self.cur.execute(
+                "SELECT user_id, grade, letter FROM users WHERE is_active = TRUE;"
+            )
             return self.cur.fetchall()
-    
+
     def get_user_for_schedule(self, user_id):
-        """
-        """
-        
+        """ """
+
         with self.conn:
             self.cur.execute(
                 "SELECT user_id, grade, letter FROM users WHERE user_id = %s AND is_active = TRUE;",
-                (user_id,)
+                (user_id,),
             )
             return self.cur.fetchone()
