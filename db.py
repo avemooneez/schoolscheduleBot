@@ -26,11 +26,12 @@ class Database:
         """
         Выводит количество всех пользователей в таблице users.
         """
-        
+
         # self.create_tables()
         # self.custom()
         # self.get_db()
         self.get_count_of_users()
+
     def create_tables(self):
         with self.conn:
             self.cur.execute(
@@ -81,8 +82,8 @@ CREATE TABLE IF NOT EXISTS groups(
             users = self.cur.fetchall()
             self.cur.execute("SELECT * FROM groups;")
             groups = self.cur.fetchall()
-            
-            logging.info(users, '\n', groups)
+
+            logging.info(users, "\n", groups)
 
     def custom(self):
         """
@@ -95,7 +96,7 @@ CREATE TABLE IF NOT EXISTS groups(
             self.cur.execute("UPDATE users SET grade = 0 WHERE grade IS NULL;")
             self.cur.execute("UPDATE users SET letter = '' WHERE letter IS NULL;")
             logging.info("Дефолтные значения добавлены.")
-        
+
     def get_users(self):
         """
         Получает список всех пользователей из базы данных.
@@ -137,7 +138,14 @@ CREATE TABLE IF NOT EXISTS groups(
         """
 
         with self.conn:
-            self.cur.execute("INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);", (grade, letter, user_id,))
+            self.cur.execute(
+                "INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);",
+                (
+                    grade,
+                    letter,
+                    user_id,
+                ),
+            )
 
     def get_admins(self):
         """"""
@@ -154,8 +162,15 @@ CREATE TABLE IF NOT EXISTS groups(
         - grade (int): Новое значение для поля grade.
         - letter (str): Новое значение для поля letter.
         """
-        with self.conn:  
-            self.cur.execute("UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;", (grade, letter, user_id,))
+        with self.conn:
+            self.cur.execute(
+                "UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;",
+                (
+                    grade,
+                    letter,
+                    user_id,
+                ),
+            )
 
     def get_user(self, user_id: int):
         """
@@ -199,22 +214,36 @@ CREATE TABLE IF NOT EXISTS groups(
                 (user_id,),
             )
             return self.cur.fetchone()
-    
+
     def get_groups(self):
         """"""
         with self.conn:
             self.cur.execute("SELECT * FROM groups;")
             return self.cur.fetchall()
-    
+
     def add_group(self, group, grade, letter):
         """"""
         with self.conn:
-            self.cur.execute("INSERT INTO groups (group_id, grade, letter) VALUES (%s, %s, %s);", (group, grade, letter,))
-    
+            self.cur.execute(
+                "INSERT INTO groups (group_id, grade, letter) VALUES (%s, %s, %s);",
+                (
+                    group,
+                    grade,
+                    letter,
+                ),
+            )
+
     def update_group(self, group_id, grade, letter):
         with self.conn:
-            self.cur.execute("UPDATE groups SET grade = %s, letter = %s WHERE group_id = %s;", (grade, letter, group_id,))
-    
+            self.cur.execute(
+                "UPDATE groups SET grade = %s, letter = %s WHERE group_id = %s;",
+                (
+                    grade,
+                    letter,
+                    group_id,
+                ),
+            )
+
     def get_group(self, group_id):
         with self.conn:
             self.cur.execute("SELECT * FROM groups WHERE group_id = %s;", (group_id,))

@@ -11,6 +11,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
+
 class SendScheduleImage:
     def __init__(self):
         self.page_mapping = {
@@ -84,15 +85,15 @@ class SendScheduleImage:
         """
         Достаёт фото из файла с расписанием.
         """
-        
+
         docx2txt.process(self.file_path, self.folder_path)
-    
+
     def compare_docx(self, file1, file2) -> bool:
         """
         Сравнивает два файла на наличие различий.
         Возвращает bool.
         """
-        
+
         doc1 = aw.Document(file1)
         doc2 = aw.Document(file2)
 
@@ -105,11 +106,11 @@ class SendScheduleImage:
 
         while True:
             logging.info("Проверка нового расписания")
-            
+
             if os.path.exists(self.file_path):
-                file2 = self.download_file(self.file_name + '1')
+                file2 = self.download_file(self.file_name + "1")
                 if os.path.exists(file2) and self.compare_docx(self.file_path, file2):
-                    logging.info('Файлы не идентичны')
+                    logging.info("Файлы не идентичны")
                     os.remove(self.file_path)
                     os.rename(file2, self.file_path)
 
@@ -124,13 +125,13 @@ class SendScheduleImage:
                     logging.info("Расписание отправлено успешно!")
                     continue
                 else:
-                    logging.info('Файлы идентичны')
+                    logging.info("Файлы идентичны")
                     os.remove(file2)
             else:
                 logging.warning("Нет файла с расписанием!")
-            
-            await asyncio.sleep(599) # Ждёт 10 минут
-        
+
+            await asyncio.sleep(599)  # Ждёт 10 минут
+
     def get_image_name(self, grade):
         return f"{self.folder_path}/{self.page_mapping.get(grade)}"
 
@@ -154,13 +155,15 @@ class SendScheduleImage:
             try:
                 await bot.send_photo(
                     chat_id=group[0],
-                    photo=FSInputFile(self.get_image_name(str(group[1]) + str(group[2]).lower())),
-                    caption="Доступно новое расписание!"
+                    photo=FSInputFile(
+                        self.get_image_name(str(group[1]) + str(group[2]).lower())
+                    ),
+                    caption="Доступно новое расписание!",
                 )
             except Exception as e:
                 logging.warning(e)
         logging.info("Расписание для групп успешно отправлено")
-    
+
     async def send_schedule_images_for_one(self, message, db, user_id):
         user = db.get_user_for_schedule(user_id)
         if user:
