@@ -14,25 +14,25 @@ def letter_kb(grade) -> ReplyKeyboardMarkup:
     kb = ReplyKeyboardBuilder()
     match grade:
         case "5":
-            for letter in ["А", "Б", "В", "Г", "Д", "Е", "Ж", "И"]:
+            for letter in ["А", "Б", "В", "Г", "Д", "Е", "Ж", "З"]:
                 kb.add(KeyboardButton(text=letter))
         case "6":
-            for letter in ["А", "Б", "В", "Г", "Д", "З", "Ж"]:
+            for letter in ["А", "Б", "В", "Г", "Д", "З", "И"]:
                 kb.add(KeyboardButton(text=letter))
         case "7":
-            for letter in ["А", "Б", "В", "Г", "Д", "Е"]:
+            for letter in ["А", "Б", "В", "Г", "Д", "Ж", "З"]:
                 kb.add(KeyboardButton(text=letter))
         case "8":
             for letter in ["А", "Б", "В", "Г", "Д", "Е"]:
                 kb.add(KeyboardButton(text=letter))
         case "9":
-            for letter in ["А", "Б", "В", "Г", "Д"]:
+            for letter in ["А", "Б", "В", "Г", "Д", "Е"]:
                 kb.add(KeyboardButton(text=letter))
         case "10":
             for letter in ["А", "Б"]:
                 kb.add(KeyboardButton(text=letter))
         case "11":
-            for letter in ["А", "Б"]:
+            for letter in ["А"]:
                 kb.add(KeyboardButton(text=letter))
     return kb.as_markup(resize_keyboard=True)
 

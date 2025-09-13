@@ -11,16 +11,63 @@ class Database:
         """
         Инициализирует класс, подключается к БД.
         """
+        self.conn = None
+        self.cur = None
+        self._connect()
+
+    def _connect(self):
+        """Создает новое соединение с базой данных"""
+        if self.conn:
+            try:
+                self.conn.close()
+            except:
+                pass
 
         self.conn = psycopg.connect(
             user=f"{db_user}",
             password=f"{db_passwd}",
             host=f"{db_host}",
             port="5432",
-            database="schoolproject",
+            dbname="schoolproject",
         )
         self.cur = self.conn.cursor()
         self.conn.autocommit = True
+
+    def _execute_with_retry(self, query, params=None):
+        """Выполняет запрос с автоматическим переподключением при ошибке"""
+        try:
+            with self.conn:
+                if params:
+                    self.cur.execute(query, params)
+                else:
+                    self.cur.execute(query)
+                return self.cur.fetchall()
+        except psycopg.OperationalError:
+            self._connect()
+            with self.conn:
+                if params:
+                    self.cur.execute(query, params)
+                else:
+                    self.cur.execute(query)
+                return self.cur.fetchall()
+
+    def _execute_one_with_retry(self, query, params=None):
+        """Выполняет запрос с автоматическим переподключением при ошибке (fetchone)"""
+        try:
+            with self.conn:
+                if params:
+                    self.cur.execute(query, params)
+                else:
+                    self.cur.execute(query)
+                return self.cur.fetchone()
+        except psycopg.OperationalError:
+            self._connect()
+            with self.conn:
+                if params:
+                    self.cur.execute(query, params)
+                else:
+                    self.cur.execute(query)
+                return self.cur.fetchone()
 
     def start(self):
         """
@@ -122,10 +169,10 @@ CREATE TABLE IF NOT EXISTS groups(
         Возвращает:
         bool: True, если пользователь с указанным user_id существует в базе данных, иначе False.
         """
-
-        with self.conn:
-            self.cur.execute("SELECT * FROM users WHERE user_id = %s;", (user_id,))
-            return self.cur.fetchone() is not None
+        result = self._execute_one_with_retry(
+            "SELECT * FROM users WHERE user_id = %s;", (user_id,)
+        )
+        return result is not None
 
     def add_user(self, user_id: int, grade: int, letter: str):
         """
@@ -200,26 +247,20 @@ CREATE TABLE IF NOT EXISTS groups(
 
     def get_active_users(self):
         """"""
-        with self.conn:
-            self.cur.execute(
-                "SELECT user_id, grade, letter FROM users WHERE is_active = TRUE;"
-            )
-            return self.cur.fetchall()
+        return self._execute_with_retry(
+            "SELECT user_id, grade, letter FROM users WHERE is_active = TRUE;"
+        )
 
     def get_user_for_schedule(self, user_id):
         """"""
-        with self.conn:
-            self.cur.execute(
-                "SELECT user_id, grade, letter FROM users WHERE user_id = %s AND is_active = TRUE;",
-                (user_id,),
-            )
-            return self.cur.fetchone()
+        return self._execute_one_with_retry(
+            "SELECT user_id, grade, letter FROM users WHERE user_id = %s AND is_active = TRUE;",
+            (user_id,),
+        )
 
     def get_groups(self):
         """"""
-        with self.conn:
-            self.cur.execute("SELECT * FROM groups;")
-            return self.cur.fetchall()
+        return self._execute_with_retry("SELECT * FROM groups;")
 
     def add_group(self, group, grade, letter):
         """"""
