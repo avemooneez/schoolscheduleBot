@@ -9,6 +9,7 @@ from datetime import datetime
 import aspose.words as aw
 import logging
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 class SendScheduleImage:
     def __init__(self):
@@ -80,11 +81,18 @@ class SendScheduleImage:
         return self.folder_path + "/" + output_file + ".docx"
 
     def get_images_from_docx(self):
-        """Получение изображений из файла с расписанием"""
+        """
+        Достаёт фото из файла с расписанием.
+        """
+        
         docx2txt.process(self.file_path, self.folder_path)
-
-    def compare_docx(self, file1, file2):
-        """Сравнивает два файла с расписанием, возвращает bool"""
+    
+    def compare_docx(self, file1, file2) -> bool:
+        """
+        Сравнивает два файла на наличие различий.
+        Возвращает bool.
+        """
+        
         doc1 = aw.Document(file1)
         doc2 = aw.Document(file2)
 
@@ -96,9 +104,12 @@ class SendScheduleImage:
         self.get_images_from_docx()
 
         while True:
+            logging.info("Проверка нового расписания")
+            
             if os.path.exists(self.file_path):
-                file2 = self.download_file(self.file_name + "1")
+                file2 = self.download_file(self.file_name + '1')
                 if os.path.exists(file2) and self.compare_docx(self.file_path, file2):
+                    logging.info('Файлы не идентичны')
                     os.remove(self.file_path)
                     os.rename(file2, self.file_path)
 
@@ -110,16 +121,23 @@ class SendScheduleImage:
                     self.get_images_from_docx()
 
                     await self.send_schedule_images_for_all(bot, db)
+                    logging.info("Расписание отправлено успешно!")
                     continue
-                os.remove(file2)
+                else:
+                    logging.info('Файлы идентичны')
+                    os.remove(file2)
             else:
-            await asyncio.sleep(600)
-
+                logging.warning("Нет файла с расписанием!")
+            
+            await asyncio.sleep(599) # Ждёт 10 минут
+        
     def get_image_name(self, grade):
         return f"{self.folder_path}/{self.page_mapping.get(grade)}"
 
     async def send_schedule_images_for_all(self, bot, db):
         users = db.get_active_users()
+        groups = db.get_groups()
+        # groups = [(-1002129798501, 9, 'А'),]
         for _, user in enumerate(users):
             try:
                 await bot.send_photo(
@@ -130,8 +148,19 @@ class SendScheduleImage:
                     caption="Доступно новое расписание!",
                 )
             except Exception as e:
-                logging.error(e)
-
+                logging.warning(e)
+        logging.info("Расписание для пользователей успешно отправлено")
+        for _, group in enumerate(groups):
+            try:
+                await bot.send_photo(
+                    chat_id=group[0],
+                    photo=FSInputFile(self.get_image_name(str(group[1]) + str(group[2]).lower())),
+                    caption="Доступно новое расписание!"
+                )
+            except Exception as e:
+                logging.warning(e)
+        logging.info("Расписание для групп успешно отправлено")
+    
     async def send_schedule_images_for_one(self, message, db, user_id):
         user = db.get_user_for_schedule(user_id)
         if user:
@@ -142,6 +171,6 @@ class SendScheduleImage:
                     )
                 )
             except Exception as e:
-                logging.error(e)
+                logging.warning(e)
         else:
             logging.error("User not found")

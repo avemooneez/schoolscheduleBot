@@ -1,6 +1,9 @@
 import psycopg
 from psycopg import sql
 from utils.tokens import db_user, db_host, db_passwd
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 
 class Database:
@@ -21,13 +24,13 @@ class Database:
 
     def start(self):
         """
-        Создаёт таблицу users, если таковой не существует. Выводит всех пользователей в таблице.
+        Выводит количество всех пользователей в таблице users.
         """
-
-        self.create_tables()
+        
+        # self.create_tables()
         # self.custom()
-        self.get_db()
-
+        # self.get_db()
+        self.get_count_of_users()
     def create_tables(self):
         with self.conn:
             self.cur.execute(
@@ -36,11 +39,26 @@ CREATE TABLE IF NOT EXISTS users(
     user_id BIGINT PRIMARY KEY UNIQUE NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
-    grade INTEGER,
-    letter TEXT
+    grade INTEGER DEFAULT 0,
+    letter TEXT DEFAULT ''
 );
 """
             )
+            self.cur.execute(
+                """
+CREATE TABLE IF NOT EXISTS groups(
+    group_id BIGINT PRIMARY KEY UNIQUE NOT NULL,
+    grade INTEGER DEFAULT 0,
+    letter TEXT DEFAULT ''
+);
+"""
+            )
+
+    def get_count_of_users(self):
+        with self.conn:
+            self.cur.execute("SELECT COUNT(*) FROM users WHERE is_active = TRUE;")
+            count = self.cur.fetchone()[0]
+            logging.info(f"Количество активных пользователей: {count}")
 
     def get_db(self):
         """
@@ -61,7 +79,10 @@ CREATE TABLE IF NOT EXISTS users(
         with self.conn:
             self.cur.execute("SELECT * FROM users;")
             users = self.cur.fetchall()
-            print(users)
+            self.cur.execute("SELECT * FROM groups;")
+            groups = self.cur.fetchall()
+            
+            logging.info(users, '\n', groups)
 
     def custom(self):
         """
@@ -69,8 +90,12 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute("DELETE FROM users")
-
+            self.cur.execute("ALTER TABLE users ALTER COLUMN grade SET DEFAULT 0;")
+            self.cur.execute("ALTER TABLE users ALTER COLUMN letter SET DEFAULT '';")
+            self.cur.execute("UPDATE users SET grade = 0 WHERE grade IS NULL;")
+            self.cur.execute("UPDATE users SET letter = '' WHERE letter IS NULL;")
+            logging.info("Дефолтные значения добавлены.")
+        
     def get_users(self):
         """
         Получает список всех пользователей из базы данных.
@@ -112,10 +137,7 @@ CREATE TABLE IF NOT EXISTS users(
         """
 
         with self.conn:
-            self.cur.execute(
-                "INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);",
-                (grade, letter, user_id),
-            )
+            self.cur.execute("INSERT INTO users (grade, letter, user_id) VALUES (%s, %s, %s);", (grade, letter, user_id,))
 
     def get_admins(self):
         """"""
@@ -132,11 +154,8 @@ CREATE TABLE IF NOT EXISTS users(
         - grade (int): Новое значение для поля grade.
         - letter (str): Новое значение для поля letter.
         """
-        with self.conn:
-            self.cur.execute(
-                "UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;",
-                (grade, letter, user_id),
-            )
+        with self.conn:  
+            self.cur.execute("UPDATE users SET grade = %s, letter = %s WHERE user_id = %s;", (grade, letter, user_id,))
 
     def get_user(self, user_id: int):
         """
@@ -157,8 +176,7 @@ CREATE TABLE IF NOT EXISTS users(
             return self.cur.fetchone()
 
     def get_grade(self, user_id: int):
-        """ """
-
+        """"""
         with self.conn:
             self.cur.execute(
                 "SELECT grade, letter FROM users WHERE user_id = %s;", (user_id,)
@@ -174,11 +192,30 @@ CREATE TABLE IF NOT EXISTS users(
             return self.cur.fetchall()
 
     def get_user_for_schedule(self, user_id):
-        """ """
-
+        """"""
         with self.conn:
             self.cur.execute(
                 "SELECT user_id, grade, letter FROM users WHERE user_id = %s AND is_active = TRUE;",
                 (user_id,),
             )
+            return self.cur.fetchone()
+    
+    def get_groups(self):
+        """"""
+        with self.conn:
+            self.cur.execute("SELECT * FROM groups;")
+            return self.cur.fetchall()
+    
+    def add_group(self, group, grade, letter):
+        """"""
+        with self.conn:
+            self.cur.execute("INSERT INTO groups (group_id, grade, letter) VALUES (%s, %s, %s);", (group, grade, letter,))
+    
+    def update_group(self, group_id, grade, letter):
+        with self.conn:
+            self.cur.execute("UPDATE groups SET grade = %s, letter = %s WHERE group_id = %s;", (grade, letter, group_id,))
+    
+    def get_group(self, group_id):
+        with self.conn:
+            self.cur.execute("SELECT * FROM groups WHERE group_id = %s;", (group_id,))
             return self.cur.fetchone()

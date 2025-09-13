@@ -1,6 +1,6 @@
-from aiogram import Command, Router
 from aiogram.types import Message
-
+from aiogram.filters import Command
+from aiogram import Router, F
 from db import Database
 from utils.downloading_file import SendScheduleImage
 
